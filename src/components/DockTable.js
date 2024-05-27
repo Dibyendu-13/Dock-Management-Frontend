@@ -47,7 +47,7 @@ function DockTable() {
       is3PL: false 
     })
       .then(response => {
-        console.log(response.data.message);
+        
       })
       .catch(error => {
         console.error('Error docking vehicle:', error);
@@ -78,7 +78,7 @@ function DockTable() {
 
     axios.post(`${ENDPOINT}/api/release-dock`, { dockId })
       .then(response => {
-        console.log(response.data.message);
+    
        
         setEtas((prevEtas) => {
           const newEtas = { ...prevEtas };
@@ -101,12 +101,10 @@ function DockTable() {
   };
 
   useEffect(() => {
-    // Increment reRenderTrigger to force re-render
-    console.log(reRenderTrigger);
-    console.log(docks)
+
    
     setReRenderTrigger(prev => prev + 1);
-  }, [waitingVehicles,docks]);
+  }, [waitingVehicles,docks,reRenderTrigger]);
 
   return (
     <div className="container mt-5">

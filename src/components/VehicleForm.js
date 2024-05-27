@@ -18,7 +18,7 @@ function VehicleForm() {
       unloadingTime,
       is3PL
     });
-    console.log(response.data);
+   
   };
 
   return (

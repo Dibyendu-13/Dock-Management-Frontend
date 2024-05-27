@@ -5,11 +5,12 @@ import VehicleForm from './components/VehicleForm';
 function App() {
   return (
     <div className="App">
-<div style={{ display: 'flex', alignItems: 'center',flexDirection:'column' }}>
+{/* <div style={{ display: 'flex', alignItems: 'center',flexDirection:'column' }}>
       <h1>Vehicle Dock Management System</h1>
       <VehicleForm />
       <DockTable />
-      </div>
+      </div> */}
+      Hello there!!!
     
      
     </div>
