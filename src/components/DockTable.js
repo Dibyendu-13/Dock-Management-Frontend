@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 
-const ENDPOINT = "http://localhost:5000";
+const ENDPOINT = " https://secret-castle-75015-b0147fa6ddd8.herokuapp.com/ ";
 
 function DockTable() {
   const [docks, setDocks] = useState([]);
