@@ -3,6 +3,8 @@ import axios from 'axios';
 import io from 'socket.io-client';
 
 const ENDPOINT = " https://secret-castle-75015-b0147fa6ddd8.herokuapp.com";
+ // Connect to Socket.IO server
+ const socket = io(ENDPOINT);
 
 function DockTable() {
   const [docks, setDocks] = useState([]);
@@ -24,8 +26,7 @@ function DockTable() {
         console.error('Error fetching docks:', error);
       });
 
-    // Connect to Socket.IO server
-    const socket = io(ENDPOINT);
+   
 
     // Listen for dock status updates from the server
     socket.on('dockStatusUpdate', ({ docks, waitingVehicles }) => {
