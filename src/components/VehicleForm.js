@@ -12,7 +12,7 @@ function VehicleForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await axios.post(`${ENDPOINT}/api/assign-dock`, {
+  await axios.post(`${ENDPOINT}/api/assign-dock`, {
       vehicleNumber,
       source,
       unloadingTime,
