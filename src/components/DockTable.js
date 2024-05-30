@@ -3,109 +3,129 @@ import axios from 'axios';
 import io from 'socket.io-client';
 
 const ENDPOINT = "https://secret-castle-75015-b0147fa6ddd8.herokuapp.com";
- // Connect to Socket.IO server
- const socket = io(ENDPOINT);
 
 function DockTable() {
+  // Dictionary object to keep track of active timers
+  const activeTimers = {};
   const [docks, setDocks] = useState([]);
   const [waitingVehicles, setWaitingVehicles] = useState([]);
-  const [disabledDocks, setDisabledDocks] = useState([]);
   const [etas, setEtas] = useState({});
-  const undockRef = useRef({});
-  const [reRenderTrigger, setReRenderTrigger] = useState(0);
+  const timersRef = useRef({});
+  const socketRef = useRef(null);
 
   useEffect(() => {
-    // Fetch docks data from the API initially
-    axios.get(`${ENDPOINT}/api/dock-status`)
-      .then(response => {
+    const fetchDockData = async () => {
+      try {
+        console.log('Fetching dock data from API');
+        const response = await axios.get(`${ENDPOINT}/api/dock-status`);
         const { docks, waitingVehicles } = response.data;
         setDocks(docks);
         setWaitingVehicles(waitingVehicles);
-      })
-      .catch(error => {
-        console.error('Error fetching docks:', error);
-      });
-
    
+       
+       
+      } catch (error) {
+        console.error('Error fetching docks:', error);
+      }
+    };
 
-    // Listen for dock status updates from the server
-    socket.on('dockStatusUpdate', ({ docks, waitingVehicles }) => {
-      setDocks(docks);
-      setWaitingVehicles(waitingVehicles);
-    });
+    fetchDockData();
 
-    // Clean up on component unmount
+    if (!socketRef.current) {
+      socketRef.current = io(ENDPOINT);
+
+      socketRef.current.on('dockStatusUpdate', ({ docks, waitingVehicles }) => {
+        console.log('Received dock status update from server');
+        setDocks(docks);
+        setWaitingVehicles(waitingVehicles);
+
+        docks.forEach(dock => {
+          if (dock.status === 'occupied' ) {
+            startTimer(dock.id, dock.unloadingTime);
+          }
+        });
+  
+      
+      });
+    }
+
     return () => {
-      socket.disconnect();
+      if (socketRef.current) {
+        console.log('Cleaning up: Disconnecting socket and clearing timers');
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      Object.values(timersRef.current).forEach(clearInterval);
     };
   }, []);
 
-  const dockVehicle = (dockId) => {
-    axios.post(`${ENDPOINT}/api/assign-dock`, { 
-      vehicleNumber: '', 
-      source: '', 
-      unloadingTime: '', 
-      is3PL: false 
-    })
-      .then(response => {
-        
-      })
-      .catch(error => {
-        console.error('Error docking vehicle:', error);
+  const dockVehicle = async (dockId) => {
+    console.log(`Docking vehicle at dock ${dockId}`);
+    try {
+      const response = await axios.post(`${ENDPOINT}/api/assign-dock`, {
+        vehicleNumber: '',
+        source: '',
+        unloadingTime: '',
+        is3PL: false,
       });
+      console.log('Vehicle docked successfully', response.data);
+    } catch (error) {
+      console.error('Error docking vehicle:', error);
+    }
   };
 
   const startTimer = (dockId, eta) => {
-    setEtas((prevEtas) => ({ ...prevEtas, [dockId]: eta }));
-
-    const timer = setInterval(() => {
-      setEtas((prevEtas) => {
-        if (prevEtas[dockId] === 0) {
-          clearInterval(timer);
-          undockVehicle(dockId);
-          return { ...prevEtas, [dockId]: 0 };
-        }
-        return { ...prevEtas, [dockId]: prevEtas[dockId] - 1 };
-      });
-    }, 60000); // Update every minute (60000 ms)
-  };
-
-  const undockVehicle = (dockId) => {
-    if (undockRef.current[dockId]) {
+    // Check if timer is already active for the dockId
+    if (activeTimers[dockId]) {
+      console.log(`Timer already active for dock ${dockId}`);
       return;
     }
-
-    undockRef.current[dockId] = true;
-
-    axios.post(`${ENDPOINT}/api/release-dock`, { dockId })
-      .then(response => {
-    
-       
-        setEtas((prevEtas) => {
-          const newEtas = { ...prevEtas };
-          delete newEtas[dockId];
-          return newEtas;
-        });
-        undockRef.current[dockId] = false;
-      })
-      .catch(error => {
-        console.error('Error undocking vehicle:', error);
-      });
+  
+    console.log(`Dock ${dockId} timer has started!`);
+    // Start the timer
+    activeTimers[dockId] = setTimeout(() => {
+      undockVehicle(dockId);
+      // Once the timer is finished, remove it from active timers
+      delete activeTimers[dockId];
+    }, eta * 60000);
   };
+  
+  
 
-  const toggleDockStatus = (dockId) => {
-    if (disabledDocks.includes(dockId)) {
-      setDisabledDocks(disabledDocks.filter(d => d !== dockId));
-    } else {
-      setDisabledDocks([...disabledDocks, dockId]);
+  const undockVehicle = async (dockId) => {
+    console.log(`Undocking vehicle from dock ${dockId}`);
+    
+    try {
+      console.log(docks);
+  
+      const response = await axios.post(`${ENDPOINT}/api/release-dock`, { dockId });
+      console.log('Vehicle undocked successfully', response.data);
+
+  
+      setDocks(prevDocks => prevDocks.map(d => d.id === dockId ? { ...d, status: 'available', vehicleNumber: '', source: '' } : d));
+    } catch (error) {
+      console.error('Error undocking vehicle:', error);
     }
   };
+  
+  const toggleDockStatus = async (dockId) => {
+    console.log(`Toggling status of dock ${dockId}`);
+    const dock = docks.find(d => d.id === dockId);
 
-  useEffect(() => {
-
-   
-    setReRenderTrigger(prev => prev + 1);
-  }, [waitingVehicles,docks,reRenderTrigger]);
+    if (dock) {
+      try {
+        if (dock.status === 'disabled') {
+          const response = await axios.post(`${ENDPOINT}/api/enable-dock`, { dockNumber: dock.dockNumber });
+          console.log(`Dock ${dockId} has been enabled`, response.data);
+        } else {
+          const response = await axios.post(`${ENDPOINT}/api/disable-dock`, { dockNumber: dock.dockNumber });
+          console.log(`Dock ${dockId} has been disabled`, response.data);
+        }
+      } catch (error) {
+        console.error(`Error ${dock.status === 'disabled' ? 'enabling' : 'disabling'} dock:`, error);
+      }
+    }
+  };
 
   return (
     <div className="container mt-5">
@@ -131,21 +151,20 @@ function DockTable() {
               <td>{dock.vehicleNumber}</td>
               <td>{dock.vehicleNumber ? `${etas[dock.id] !== undefined ? etas[dock.id] : dock.unloadingTime} min` : ''}</td>
               <td>
-                {dock.vehicleNumber ? (
+                {dock.status === 'occupied' ? (
                   <button
                     style={{ width: '100px' }}
                     className='btn btn-danger btn-md btn-block'
-                    onClick={() => startTimer(dock.id, dock.unloadingTime)}
-                    disabled={disabledDocks.includes(dock.id)}
+                    onClick={() => undockVehicle(dock.id)}
                   >
-                    {etas[dock.id] !== undefined ? `ETA: ${etas[dock.id]} min` : 'Undock'}
+                    Undock
                   </button>
                 ) : (
                   <button
                     style={{ width: '100px' }}
                     className='btn btn-success btn-md btn-block'
                     onClick={() => dockVehicle(dock.id)}
-                    disabled={disabledDocks.includes(dock.id)}
+                    disabled={dock.status === 'disabled'}
                   >
                     Dock
                   </button>
@@ -154,10 +173,10 @@ function DockTable() {
               <td>
                 <button
                   style={{ width: '100px' }}
-                  className={`btn btn-md btn-block ${disabledDocks.includes(dock.id) ? 'btn-secondary' : 'btn-warning'}`}
+                  className={`btn btn-md btn-block ${dock.status === 'disabled' ? 'btn-warning' : 'btn-secondary'}`}
                   onClick={() => toggleDockStatus(dock.id)}
                 >
-                  {disabledDocks.includes(dock.id) ? 'Enable' : 'Disable'}
+                  {dock.status === 'disabled' ? 'Enable' : 'Disable'}
                 </button>
               </td>
             </tr>
