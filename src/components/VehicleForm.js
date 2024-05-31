@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 
-
 const ENDPOINT = "https://secret-castle-75015-b0147fa6ddd8.herokuapp.com";
 
 function VehicleForm() {
