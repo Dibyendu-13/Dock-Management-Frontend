@@ -4,7 +4,9 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles.css';
 
-const ENDPOINT = "http://localhost:5000";
+
+const ENDPOINT = "https://secret-castle-75015-b0147fa6ddd8.herokuapp.com";
+
 
 function VehicleForm() {
   const [vehicleNumber, setVehicleNumber] = useState('');
