@@ -5,9 +5,9 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles.css';
 
-const ENDPOINT = "https://secret-castle-75015-b0147fa6ddd8.herokuapp.com";
+// const ENDPOINT = "https://secret-castle-75015-b0147fa6ddd8.herokuapp.com";
 
-// const ENDPOINT = "http://localhost:5000";
+const ENDPOINT = "http://localhost:5000";
 
 function DockTable() {
   // Dictionary object to keep track of active timers
@@ -23,58 +23,51 @@ function DockTable() {
 
 
 
-  const fetchDockData = async () => {
-    try {
-      console.log('Fetching dock data from API');
-      const response = await axios.get(`${ENDPOINT}/api/dock-status`);
-      const { docks, waitingVehicles } = response.data;
-      setDocks(docks);
-      setWaitingVehicles(waitingVehicles);
-    } catch (error) {
-      console.error('Error fetching docks:', error);
-      // setError(`Error fetching docks`)
-    }
-  };
-  
+
   useEffect(() => {
-    const socket = io(ENDPOINT);
-  
-    // Listen for dock status updates from the server
-    socket.on('dockStatusUpdate', ({ docks, waitingVehicles }) => {
-      console.log('Received dock status update from server');
-      setDocks(docks);
-      setWaitingVehicles(waitingVehicles);
-  
-      docks.forEach(dock => {
-        if (dock.status === 'occupied' && !timersRef.current[dock.id]) {
-          startTimer(dock.id, dock.unloadingTime);
-        }
-      });
-    });
-  
-    // Fetch initial dock data and setup socket connection
-    fetchDockData();
-  
-    // Cleanup: Disconnect socket when component unmounts
-    return () => {
-      socket.disconnect();
-      Object.values(timersRef.current).forEach(clearInterval);
-    };
-  }, []); // Empty dependency array ensures the effect runs only once on component mount
-  
-  // Periodically fetch dock data every minute
-  useEffect(() => {
-    const intervalId = setInterval(async () => {
+    const fetchDockData = async () => {
       try {
-        await fetchDockData();
+        console.log('Fetching dock data from API');
+        const response = await axios.get(`${ENDPOINT}/api/dock-status`);
+        const { docks, waitingVehicles } = response.data;
+        setDocks(docks);
+        setWaitingVehicles(waitingVehicles);
       } catch (error) {
         console.error('Error fetching docks:', error);
+        // setError(`Error fetching docks`)
       }
-    }, 60000); // Fetch data every minute (60,000 milliseconds)
-  
-    // Cleanup: Clear the interval when the component unmounts
-    return () => clearInterval(intervalId);
-  }, []); // Empty dependency array ensures the effect runs only once on component mount
+    };
+
+    fetchDockData();
+
+    if (!socketRef.current) {
+      socketRef.current = io(ENDPOINT);
+
+      socketRef.current.on('dockStatusUpdate', ({ docks, waitingVehicles }) => {
+        console.log('Received dock status update from server');
+        setDocks(docks);
+        setWaitingVehicles(waitingVehicles);
+
+        docks.forEach(dock => {
+          if (dock.status === 'occupied' && !timersRef.current[dock.id]) {
+            startTimer(dock.id, dock.unloadingTime);
+          }
+          
+        });
+      });
+    }
+
+    return () => {
+      if (socketRef.current) {
+        console.log('Cleaning up: Disconnecting socket and clearing timers');
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      Object.values(timersRef.current).forEach(clearInterval);
+    };
+  }, []);
+
+
 
   const dockVehicle = async (dockId) => {
     console.log(`Docking vehicle at dock ${dockId}`);
