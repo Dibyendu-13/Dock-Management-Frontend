@@ -1,0 +1,48 @@
+.vehicle-form {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .form-group-inline {
+    display: flex;
+    flex-direction: column;
+    margin-right: 10px;
+  }
+  
+  .form-control-inline {
+    width: 150px;
+  }
+  
+  .form-check-inline {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+  }
+  
+  .btn-primary-inline {
+    height: fit-content;
+  }
+  
+  .toast-container {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+  }
+
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+.form-check {
+    margin-left: 5px; /* Adjust this value as needed */
+    margin-top: 5px; /* Adjust this value as needed */
+}
+

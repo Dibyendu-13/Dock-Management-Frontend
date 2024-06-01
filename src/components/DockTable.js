@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './styles.css';
 
 const ENDPOINT = "https://secret-castle-75015-b0147fa6ddd8.herokuapp.com";
+
+// const ENDPOINT = "http://localhost:5000";
 
 function DockTable() {
   // Dictionary object to keep track of active timers
@@ -11,59 +15,70 @@ function DockTable() {
   const [docks, setDocks] = useState([]);
   const [prevState, setPrevState] = useState({}); // Initialize prevState as an empty object
   const [waitingVehicles, setWaitingVehicles] = useState([]);
+  // const [successMessage, setSuccessMessage] = useState(null);
+  // const [error, setError] = useState(null);
   const [etas, setEtas] = useState({});
   const timersRef = useRef({});
   const socketRef = useRef(null);
 
 
 
-
+  const fetchDockData = async () => {
+    try {
+      console.log('Fetching dock data from API');
+      const response = await axios.get(`${ENDPOINT}/api/dock-status`);
+      const { docks, waitingVehicles } = response.data;
+      setDocks(docks);
+      setWaitingVehicles(waitingVehicles);
+    } catch (error) {
+      console.error('Error fetching docks:', error);
+      // setError(`Error fetching docks`)
+    }
+  };
+  
   useEffect(() => {
-    const fetchDockData = async () => {
+    const socket = io(ENDPOINT);
+  
+    // Listen for dock status updates from the server
+    socket.on('dockStatusUpdate', ({ docks, waitingVehicles }) => {
+      console.log('Received dock status update from server');
+      setDocks(docks);
+      setWaitingVehicles(waitingVehicles);
+  
+      docks.forEach(dock => {
+        if (dock.status === 'occupied' && !timersRef.current[dock.id]) {
+          startTimer(dock.id, dock.unloadingTime);
+        }
+      });
+    });
+  
+    // Fetch initial dock data and setup socket connection
+    fetchDockData();
+  
+    // Cleanup: Disconnect socket when component unmounts
+    return () => {
+      socket.disconnect();
+      Object.values(timersRef.current).forEach(clearInterval);
+    };
+  }, []); // Empty dependency array ensures the effect runs only once on component mount
+  
+  // Periodically fetch dock data every minute
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
       try {
-        console.log('Fetching dock data from API');
-        const response = await axios.get(`${ENDPOINT}/api/dock-status`);
-        const { docks, waitingVehicles } = response.data;
-        setDocks(docks);
-        setWaitingVehicles(waitingVehicles);
+        await fetchDockData();
       } catch (error) {
         console.error('Error fetching docks:', error);
       }
-    };
-
-    fetchDockData();
-
-    if (!socketRef.current) {
-      socketRef.current = io(ENDPOINT);
-
-      socketRef.current.on('dockStatusUpdate', ({ docks, waitingVehicles }) => {
-        console.log('Received dock status update from server');
-        setDocks(docks);
-        setWaitingVehicles(waitingVehicles);
-
-        docks.forEach(dock => {
-          if (dock.status === 'occupied' && !timersRef.current[dock.id]) {
-            startTimer(dock.id, dock.unloadingTime);
-          }
-          
-        });
-      });
-    }
-
-    return () => {
-      if (socketRef.current) {
-        console.log('Cleaning up: Disconnecting socket and clearing timers');
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-      Object.values(timersRef.current).forEach(clearInterval);
-    };
-  }, []);
-
-
+    }, 60000); // Fetch data every minute (60,000 milliseconds)
+  
+    // Cleanup: Clear the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []); // Empty dependency array ensures the effect runs only once on component mount
 
   const dockVehicle = async (dockId) => {
     console.log(`Docking vehicle at dock ${dockId}`);
+
     try {
       const response = await axios.post(`${ENDPOINT}/api/assign-dock`, {
         vehicleNumber: '',
@@ -73,6 +88,7 @@ function DockTable() {
       });
       console.log('Vehicle docked successfully', response.data);
     } catch (error) {
+     
       console.error('Error docking vehicle:', error);
     }
   };
@@ -115,14 +131,30 @@ function DockTable() {
 
 
   const undockVehicle = async (dockId) => {
-    console.log(`Undocking vehicle from dock ${dockId}`);
+     
+     let dock=docks.find(dock=>dock.id===dockId)
+      
+     console.log(dock);
+   
     try {
       if (timersRef.current[dockId]) {
+        
+     
+        const response = await axios.post(`${ENDPOINT}/api/release-dock`, { dockId });
+        console.log('Vehicle undocked successfully', response.data);
+           
+
+          
+
         console.log(`Clearing timer for dock ${dockId}`);
         clearInterval(timersRef.current[dockId]);
         delete timersRef.current[dockId];
-        const response = await axios.post(`${ENDPOINT}/api/release-dock`, { dockId });
-        console.log('Vehicle undocked successfully', response.data);
+
+
+        toast.success(`Vehicle ${dock.vehicleNumber} Undocked Successfully from Dock ${dock.dockNumber}`);
+      
+        
+      
         setDocks(prevDocks => prevDocks.map(d => d.id === dockId ? { ...d, status: 'available', vehicleNumber: '', source: '' } : d));
 
       }
@@ -130,11 +162,14 @@ function DockTable() {
      
 
     } catch (error) {
+      
+     
+
       console.error('Error undocking vehicle:', error);
     }
   };
   const toggleDockStatus = async (dockId) => {
-    console.log(`Toggling status of dock ${dockId}`);
+  
     const dock = docks.find(d => d.id === dockId);
 
     
@@ -142,13 +177,12 @@ function DockTable() {
     if (!dock)
         return;
 
-
-    
-
     console.log(dock.status);
-    if (dock.status !== 'disabled') {
-        setPrevState({ [dockId]: dock.status });
+ 
+    if (dock.status === 'available' || dock.status === 'occupied') {
+      setPrevState((prev) => ({ ...prev, [dockId]: dock.status }));
     }
+
 
     if (dock) {
         try {
@@ -160,7 +194,8 @@ function DockTable() {
                 clearInterval(timersRef.current[dockId]);
                 delete timersRef.current[dockId];
               }
-
+            
+              console.log(prevStatus);
               if(prevStatus!=='disabled')
                 {
                   dock.status=prevStatus;
@@ -196,6 +231,7 @@ function DockTable() {
 
         } catch (error) {
             console.error(`Error ${dock.status === 'disabled' ? 'enabling' : 'disabling'} dock:`, error);
+            // setError(`Error ${dock.status === 'disabled' ? 'enabling' : 'disabling'} dock`)
         }
     }
 };
@@ -218,78 +254,92 @@ const groupedDocks = docks.reduce((acc, dock) => {
 
 
   return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4">Dock Status</h2>
-      <table className="table table-striped text-center">
-        <thead className="thead-dark">
-          <tr>
-            <th>Dock Number</th>
-            <th>Status</th>
-            <th>Vehicle Tag</th>
-            <th>Vehicle Number</th>
-            <th>ETA</th>
-            <th>Dock/Undock</th>
-            <th>Enable/Disable</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.keys(groupedDocks).map(dockNumber => (
-            groupedDocks[dockNumber].map(dock => (
-              <tr key={dock.id}>
-                <td>{dock.dockNumber}</td>
-                <td>{dock.status}</td>
-                <td>{dock.source}</td>
-                <td>{dock.vehicleNumber}</td>
-                <td>  {dock.vehicleNumber ? (  activeTimers[dock.id] ? (   `${etas[dock.id]} min`  ) : (
-                    `${etas[dock.id] !== undefined ? etas[dock.id] : dock.unloadingTime} min` )) : ( '')}</td>
-                <td>
-                  {dock.status === 'occupied' ? (
-                    <button
-                      style={{ width: '100px' }}
-                      className='btn btn-danger btn-md btn-block'
-                      onClick={() => undockVehicle(dock.id)}
-                      disabled={dock.source===''}
-                    >
-                      Undock
-                    </button>
-                  ) : (
-                    <button
-                      style={{ width: '100px' }}
-                      className='btn btn-success btn-md btn-block'
-                      onClick={() => dockVehicle(dock.id)}
-                      disabled={dock.status==='disabled' || dock.source===null}
-                    >
-                      Dock
-                    </button>
-                  )}
-                </td>
-                <td>
-                  <button
-                    style={{ width: '100px' }}
-                    className={`btn btn-md btn-block ${dock.status === 'disabled' ? 'btn-warning' : 'btn-secondary'}`}
-                    onClick={() => toggleDockStatus(dock.id)}
-                  >
-                    {dock.status === 'disabled' ? 'Enable' : 'Disable'}
-                  </button>
-                </td>
-              </tr>
-            ))
-          ))}
+    <>
 
-          {waitingVehicles.map((vehicle) => (
-            <tr key={vehicle.vehicleNumber}>
-              <td>{vehicle.dockNumber}</td>
-              <td>Waiting</td>
-              <td>{vehicle.source}</td>
-              <td>{vehicle.vehicleNumber}</td>
-              <td>{vehicle.unloadingTime} min</td>
-              <td>NA</td>
-              <td>NA</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+
+      <div className="container mt-5">
+     
+     <h2 className="text-center mb-4">Dock Status</h2>
+     <table className="table table-striped text-center">
+       <thead className="thead-dark">
+         <tr>
+           <th>Dock Number</th>
+           <th>Status</th>
+           <th>Vehicle Tag</th>
+           <th>Vehicle Number</th>
+           <th>ETA</th>
+           <th>Dock/Undock</th>
+           <th>Enable/Disable</th>
+         </tr>
+       </thead>
+       <tbody>
+         {Object.keys(groupedDocks).map(dockNumber => (
+           groupedDocks[dockNumber].map(dock => (
+             <tr key={dock.id}>
+               <td>{dock.dockNumber}</td>
+               <td>{dock.status}</td>
+
+               <td>{dock.source}</td>
+               <td>{dock.vehicleNumber}</td>
+               <td>  {dock.vehicleNumber ? (  activeTimers[dock.id] ? (   `${etas[dock.id]} min`  ) : (
+                   `${etas[dock.id] !== undefined ? etas[dock.id] : dock.unloadingTime} min` )) : ( '')}</td>
+               <td>
+                 {dock.status === 'occupied' ? (
+                   <button
+                     style={{ width: '100px' }}
+                     className="btn btn-danger btn-block btn-sm btn-md btn-lg"
+                     onClick={() => undockVehicle(dock.id)}
+                     disabled={dock.source===''}
+                   >
+                     Undock
+                   </button>
+                 ) : (
+                   <button
+                     style={{ width: '100px' }}
+                     className="btn btn-success btn-block btn-sm btn-md btn-lg"
+                     onClick={() => dockVehicle(dock.id)}
+                     disabled={dock.status==='disabled' || dock.status==='available'}
+                   >
+                     Dock
+                   </button>
+                 )}
+               </td>
+               <td>
+                 <button
+                   style={{ width: '100px' }}
+                   className={`btn btn-md btn-block btn-sm btn-md btn-lg ${dock.status === 'disabled' ? 'btn-warning' : 'btn-secondary'}`}
+                   onClick={() => toggleDockStatus(dock.id)}
+                 >
+                   {dock.status === 'disabled' ? 'Enable' : 'Disable'}
+                 </button>
+               </td>
+             </tr>
+           ))
+         ))}
+
+{waitingVehicles.map((vehicle, index) => (
+  <tr key={vehicle.vehicleNumber}>
+    <td>{index + 1}</td> {/* Using the index for numbering */}
+    <td>Waiting</td>
+    <td>{vehicle.source}</td>
+    <td>{vehicle.vehicleNumber}</td>
+    <td>{vehicle.unloadingTime} min</td>
+    <td>NA</td>
+    <td>NA</td>
+  </tr>
+))}
+
+       </tbody>
+     </table>
+   
+
+   </div>
+
+  
+    </>
+   
+  
+  
   );
 }
 
