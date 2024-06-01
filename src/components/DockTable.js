@@ -5,9 +5,9 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles.css';
 
-// const ENDPOINT = "https://secret-castle-75015-b0147fa6ddd8.herokuapp.com";
+const ENDPOINT = "https://secret-castle-75015-b0147fa6ddd8.herokuapp.com";
 
-const ENDPOINT = "http://localhost:5000";
+// const ENDPOINT = "http://localhost:5000";
 
 function DockTable() {
   // Dictionary object to keep track of active timers
