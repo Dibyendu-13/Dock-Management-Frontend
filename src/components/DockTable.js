@@ -174,44 +174,43 @@ function DockTable() {
 
     console.log(dock.status);
  
-    if (dock.status === 'available' || dock.status === 'occupied') {
-      setPrevState((prev) => ({ ...prev, [dockId]: dock.status }));
-    }
+ 
 
 
     if (dock) {
         try {
             let updatedDock;
-            let prevStatus = prevState[dockId];
+        
             if (dock.status === 'disabled') {
               if (timersRef.current[dockId]) {
                 console.log(`Clearing timer for dock ${dockId}`);
                 clearInterval(timersRef.current[dockId]);
                 delete timersRef.current[dockId];
               }
-            
-              console.log(prevStatus);
-              if(prevStatus!=='disabled')
+               
+
+              console.log(dock);
+             
+              if(dock.source===null)
+                dock.status='available';
+              else
+                 dock.status='occupied';
+              
+              if(dock.status==='occupied')
                 {
-                  dock.status=prevStatus;
-                  if(prevStatus==='occupied')
-                    {
                       console.log("Starting Timer within enable")
                       startTimer(dock.id,dock.unloadingTime)
-                    }
-                }
+              }
+          
                
                 
 
-                const response = await axios.post(`${ENDPOINT}/api/enable-dock`, {dock:dock });
-                console.log(`Dock ${dockId} has been enabled`, response.data);
+              const response = await axios.post(`${ENDPOINT}/api/enable-dock`, {dock:dock });
+              console.log(`Dock ${dockId} has been enabled`, response.data);
 
                
-            
-               
-
                 // Retain original status if it was 'occupied' or 'available'
-                updatedDock = { ...dock, status: prevStatus };
+                updatedDock = { ...dock, status: dock.status };
             } else {
                 const response = await axios.post(`${ENDPOINT}/api/disable-dock`, { dockNumber: dock.dockNumber });
                 console.log(`Dock ${dockId} has been disabled`, response.data);
