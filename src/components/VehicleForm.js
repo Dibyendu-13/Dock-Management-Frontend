@@ -27,7 +27,7 @@ function VehicleForm() {
     }
 
     try {
-        const response = await axios.post(`${process.env.PROD_ENDPOINT}/api/assign-dock`, {
+        const response = await axios.post(`${ENDPOINT}/api/assign-dock`, {
             vehicleNumber,
             source,
             unloadingTime,
