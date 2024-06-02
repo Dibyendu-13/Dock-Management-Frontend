@@ -15,8 +15,6 @@ function DockTable() {
   const [docks, setDocks] = useState([]);
   const [prevState, setPrevState] = useState({}); // Initialize prevState as an empty object
   const [waitingVehicles, setWaitingVehicles] = useState([]);
-  // const [successMessage, setSuccessMessage] = useState(null);
-  // const [error, setError] = useState(null);
   const [etas, setEtas] = useState({});
   const timersRef = useRef({});
   const socketRef = useRef(null);
@@ -127,24 +125,26 @@ function DockTable() {
      
      let dock=docks.find(dock=>dock.id===dockId)
       
+     console.log(dockId);
      console.log(dock);
    
     try {
       if (timersRef.current[dockId]) {
         
      
-        const response = await axios.post(`${ENDPOINT}/api/release-dock`, { dockId });
-        console.log('Vehicle undocked successfully', response.data);
-           
+        const res = await axios.post(`${ENDPOINT}/api/release-dock`, { dockId });
+        
 
-          
+      const data = res.data;
 
+       
+      
         console.log(`Clearing timer for dock ${dockId}`);
         clearInterval(timersRef.current[dockId]);
         delete timersRef.current[dockId];
 
 
-        toast.success(`Vehicle ${dock.vehicleNumber} Undocked Successfully from Dock ${dock.dockNumber}`);
+        toast.success(`Vehicle ${data.vehicleNumber} Undocked Successfully from Dock ${data.dockNumber} `);
       
         
       
@@ -163,6 +163,8 @@ function DockTable() {
   };
   const toggleDockStatus = async (dockId) => {
   
+
+    console.log(dockId)
     const dock = docks.find(d => d.id === dockId);
 
     
@@ -224,7 +226,7 @@ function DockTable() {
 
         } catch (error) {
             console.error(`Error ${dock.status === 'disabled' ? 'enabling' : 'disabling'} dock:`, error);
-            // setError(`Error ${dock.status === 'disabled' ? 'enabling' : 'disabling'} dock`)
+          
         }
     }
 };
