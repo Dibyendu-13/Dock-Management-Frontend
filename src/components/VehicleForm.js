@@ -7,7 +7,7 @@ import './styles.css';
 
 // const ENDPOINT = "https://secret-castle-75015-b0147fa6ddd8.herokuapp.com";
 
-const ENDPOINT = "http://localhost:5000";
+// const ENDPOINT = "http://localhost:5000";
 
 function VehicleForm() {
   const [vehicleNumber, setVehicleNumber] = useState('');
@@ -27,7 +27,7 @@ function VehicleForm() {
     }
 
     try {
-        const response = await axios.post(`${ENDPOINT}/api/assign-dock`, {
+        const response = await axios.post(`${process.env.PROD_ENDPOINT}/api/assign-dock`, {
             vehicleNumber,
             source,
             unloadingTime,

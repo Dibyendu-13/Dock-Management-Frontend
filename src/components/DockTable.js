@@ -5,9 +5,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles.css';
 
-const ENDPOINT = "https://secret-castle-75015-b0147fa6ddd8.herokuapp.com";
 
-// const ENDPOINT = "http://localhost:5000";
 
 function DockTable() {
   // Dictionary object to keep track of active timers
@@ -26,7 +24,7 @@ function DockTable() {
     const fetchDockData = async () => {
       try {
         console.log('Fetching dock data from API');
-        const response = await axios.get(`${ENDPOINT}/api/dock-status`);
+        const response = await axios.get(`${process.env.PROD_ENDPOINT}/api/dock-status`);
         const { docks, waitingVehicles } = response.data;
         setDocks(docks);
         setWaitingVehicles(waitingVehicles);
@@ -39,7 +37,7 @@ function DockTable() {
     fetchDockData();
 
     if (!socketRef.current) {
-      socketRef.current = io(ENDPOINT);
+      socketRef.current = io(process.env.PROD_ENDPOINT);
 
       socketRef.current.on('dockStatusUpdate', ({ docks, waitingVehicles }) => {
         console.log('Received dock status update from server');
@@ -71,7 +69,7 @@ function DockTable() {
     console.log(`Docking vehicle at dock ${dockId}`);
 
     try {
-      const response = await axios.post(`${ENDPOINT}/api/assign-dock`, {
+      const response = await axios.post(`${process.env.PROD_ENDPOINT}/api/assign-dock`, {
         vehicleNumber: '',
         source: '',
         unloadingTime: '',
@@ -132,7 +130,7 @@ function DockTable() {
       if (timersRef.current[dockId]) {
         
      
-        const res = await axios.post(`${ENDPOINT}/api/release-dock`, { dockId });
+        const res = await axios.post(`${process.env.PROD_ENDPOINT}/api/release-dock`, { dockId });
         
 
       const data = res.data;
@@ -203,7 +201,7 @@ function DockTable() {
                
                 
 
-                const response = await axios.post(`${ENDPOINT}/api/enable-dock`, {dock:dock });
+                const response = await axios.post(`${process.env.PROD_ENDPOINT}/api/enable-dock`, {dock:dock });
                 console.log(`Dock ${dockId} has been enabled`, response.data);
 
                
@@ -213,7 +211,7 @@ function DockTable() {
                 // Retain original status if it was 'occupied' or 'available'
                 updatedDock = { ...dock, status: prevStatus };
             } else {
-                const response = await axios.post(`${ENDPOINT}/api/disable-dock`, { dockNumber: dock.dockNumber });
+                const response = await axios.post(`${process.env.PROD_ENDPOINT}/api/disable-dock`, { dockNumber: dock.dockNumber });
                 console.log(`Dock ${dockId} has been disabled`, response.data);
                 updatedDock = { ...dock, status: 'disabled' };
             }
