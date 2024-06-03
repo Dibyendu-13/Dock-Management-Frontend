@@ -8,7 +8,7 @@ import { getAuth ,GoogleAuthProvider} from 'firebase/auth';
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCAEdgDNCQE60OuPjz8flC_AtV4vs4EYTE",
-  authDomain: "dock-mgmt.netlify.app",
+    authDomain: "dock-mgmt.netlify.app",
   projectId: "dock-mgmt",
   storageBucket: "dock-mgmt.appspot.com",
   messagingSenderId: "1047320063727",
