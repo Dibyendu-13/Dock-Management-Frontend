@@ -1,0 +1,52 @@
+.App {
+    text-align: center;
+  }
+  
+  .header {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 20px;
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .greeting {
+    margin-right: 20px;
+    font-size: 18px;
+    color: #333;
+  }
+  
+  .btn {
+    margin: 0;
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+  
+  h1 {
+    margin-bottom: 20px;
+  }
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  @media (max-width: 768px) {
+    .header {
+      justify-content: space-between;
+    }
+  
+    .greeting {
+      margin-right: 10px;
+      font-size: 16px;
+    }
+  
+    .btn {
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+  }
+  
