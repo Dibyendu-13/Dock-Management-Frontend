@@ -1,42 +1,49 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import HomePage from './HomePage'; // Adjust the path as needed
 import SignIn from './SignIn'; // Adjust the path as needed
-import PrivateRoute from './PrivateRoute'; // Adjust the path as needed
+// import Loading from 'react-fullscreen-loading';
+import Loader from './Loader';
+import './Loader.css';
 
-
-
-const App = () => {
+const PrivateRoute = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
   const auth = getAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      if (user) {
-        navigate('/'); // Navigate to HomePage if user is authenticated
-      } else {
-        navigate('/signin'); // Navigate to SignIn page if user is not authenticated
-      }
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
-  }, [auth, navigate]);
+  }, [auth]);
 
+  if (isAuthenticated === null) {
+    return <div> <Loader/></div>; // Show loading state until authentication is determined
+  }
+
+  return isAuthenticated ? children : <SignIn />;
+};
+
+const App = () => {
   return (
     <Routes>
-      <Route path="/signin" element={<SignIn />} />
-      <Route element={<PrivateRoute />}>
-        <Route path="/" element={<HomePage />} />
-      </Route>
+      <Route
+        path="/"
+        element={
+          <PrivateRoute>
+            <HomePage />
+          </PrivateRoute>
+        }
+      />
     </Routes>
   );
 };
 
 const WrappedApp = () => (
   <Router>
-    <App  />
+    <App />
   </Router>
 );
 

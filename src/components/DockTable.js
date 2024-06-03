@@ -144,7 +144,9 @@ function DockTable() {
         delete timersRef.current[dockId];
 
 
-        toast.success(`Vehicle ${data.vehicleNumber} Undocked Successfully from Dock ${data.dockNumber} `);
+        toast.success(`Vehicle ${data.vehicleNumber} Undocked Successfully from Dock ${data.dockNumber} `,{
+          closeButton: false // Disable the close button
+        });
       
         
       

@@ -136,3 +136,15 @@ h1 {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+
+/* Targeting the close button within react-toastify */
+.react-toastify-close-button {
+  /* Resetting styles */
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  /* Add any additional styles you want */
+  cursor: pointer; /* Ensuring it looks clickable */
+  color: inherit; /* Inherit text color */
+}

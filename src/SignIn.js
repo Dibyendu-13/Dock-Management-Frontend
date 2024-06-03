@@ -22,8 +22,9 @@ const SignIn = () => {
             <div className="card-body">
               <h1 className="animated-heading">Welcome to Dock  App!</h1>
               <button
-                onClick={handleGoogleSignIn} style={{width:'100%'}}
-                className="btn btn-primary btn-block"
+                onClick={handleGoogleSignIn} style={{width:'100%',padding:'8px'}}
+                className="btn btn-primary btn-block" 
+              
               >
                 Sign in with Google
               </button>

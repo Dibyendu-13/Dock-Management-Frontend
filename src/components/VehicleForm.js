@@ -39,11 +39,17 @@ function VehicleForm() {
 
         // Show different toast messages based on the server response
         if (message.includes('assigned to vehicle')) {
-            toast.success(`Vehicle ${vehicleNumber} Docked Successfully!`);
+            toast.success(`Vehicle ${vehicleNumber} Docked Successfully!`,{
+              closeButton: false // Disable the close button
+            });
         } else if (message.includes('added to waiting list')) {
-            toast.info(`Vehicle ${vehicleNumber} added to waiting list.`);
+            toast.info(`Vehicle ${vehicleNumber} added to waiting list.`,{
+              closeButton: false // Disable the close button
+            });
         } else {
-            toast.warning(`Unexpected response: ${message}`);
+            toast.warning(`Unexpected response: ${message}`,{
+              closeButton: false // Disable the close button
+            });
         }
 
         // Reset form state after successful submission
@@ -53,7 +59,9 @@ function VehicleForm() {
         setIs3PL(false);
     } catch (error) {
         console.error("Error in assigning dock", error);
-        toast.error("An error occurred while assigning the dock. Please try again.");
+        toast.error("An error occurred while assigning the dock. Please try again.",{
+          closeButton: false // Disable the close button
+        });
     }
 };
 

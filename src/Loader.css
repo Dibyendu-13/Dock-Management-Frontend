@@ -1,0 +1,84 @@
+.modal {
+    display: grid;
+    place-items: center;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    z-index: 1;  background: rgb(34, 193, 195);
+    background: linear-gradient(
+      0deg,
+      rgba(34, 193, 195, 1) 0%,
+      rgba(253, 187, 45, 1) 100%
+    );
+    backdrop-filter: blur(8px);
+    transition: 0.6s;
+    will-change: opacity visibility;
+  }
+  
+  .modal-open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+
+  
+  .loader {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 7px solid rgb(34, 193, 195);
+    border-bottom-color: rgb(253, 187, 45);
+    border-radius: 50%;
+    display: inline-block;
+    animation: rotation 1s linear infinite;
+  }
+  
+  @keyframes rotation {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  button {
+    all: unset;
+    border: 2px solid;
+    padding: 1rem 2rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.6s, box-shadow 0.3s;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: -3px 5px 10px rgb(128, 87, 0);
+  }
+  
+  button:active {
+    box-shadow: -2px 3px 5px rgb(128, 87, 0);
+  }
+  
+  button:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 30%;
+    width: 100%;
+    background: white;
+    transform: translateX(-100%) translateY(100%) rotate(45deg);
+    transition: 0.4s;
+  }
+  
+  button:hover {
+    background-color: pink;
+  }
+  
+  button:hover:before {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+  
