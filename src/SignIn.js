@@ -14,10 +14,10 @@ const SignIn = ({ onSuccess, onError }) => {
                 onSuccess={onSuccess}
                 onError={onError}
                 render={renderProps => (
-                  <button
+                  <button 
                     onClick={renderProps.onClick}
                     disabled={renderProps.disabled}
-                    style={{ width: '100%', padding: '8px' }}
+                   
                     className="btn btn-primary btn-block"
                   >
                     Sign in with Google

@@ -73,4 +73,22 @@ body, html {
     width: 100%;
     
   }
+
+
+  /* Style for the Google sign-in button */
+.google-signin-button {
+  background-color: #fff;
+  color: #757575;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.google-signin-button:hover {
+  background-color: #f8f8f8;
+}
   
