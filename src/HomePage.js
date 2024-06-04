@@ -24,12 +24,13 @@ function HomePage({ onLogout }) {
   return (
     <div className="App">
       <div className="header">
+      {user && (
+          <h2 className="greeting">Hello, {userName}!</h2>
+        )}
         <button onClick={onLogout} className="btn btn-danger">Sign Out</button>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-        {user && (
-          <h2 className="greeting">Hello, {userName}!</h2>
-        )}
+       
         <h1>Vehicle Dock Management System</h1>
         <VehicleForm />
         <DockTable />
