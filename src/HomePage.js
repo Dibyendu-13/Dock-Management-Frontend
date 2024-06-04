@@ -8,6 +8,7 @@ import './HomePage.css'; // Add this to import custom CSS
 
 function HomePage({onLogout}) {
 
+ //This is my code
  
   const user = JSON.parse(localStorage.getItem('user'));
   const jwtToken = user.credential; // Get the JWT token from the response
