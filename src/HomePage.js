@@ -1,52 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import DockTable from './components/DockTable';
 import VehicleForm from './components/VehicleForm';
-import { auth } from './firebase';
 import { ToastContainer } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
 
 import 'react-toastify/dist/ReactToastify.css'; // Ensure you import the CSS for react-toastify
 import './HomePage.css'; // Add this to import custom CSS
 
-function HomePage() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+function HomePage({onLogout}) {
 
-  useEffect(() => {
-    // Retrieve the current user from Firebase Auth
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-      setUser(currentUser);
-    } else {
-      // If no user is found, redirect to sign-in page
-      navigate('/');
-    }
-  }, [navigate]);
+ 
+  const user = JSON.parse(localStorage.getItem('user'));
 
-  const handleSignOut = async () => {
-    try {
-      await auth.signOut();
-      navigate('/'); // Redirect to sign-in page after sign-out
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
-  const getFirstName = (displayName) => {
-    if (!displayName) return '';
-    return displayName.split(' ')[0];
-  };
 
   return (
     <div className="App">
       <div className="header">
-      {user && (
-          <h2 className="greeting">Hello, {getFirstName(user.displayName || user.email)}!</h2>
-        )}
-        <button onClick={handleSignOut} className="btn btn-danger">Sign Out</button>
+        <button onClick={onLogout} className="btn btn-danger">Sign Out</button>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-       
+        {user && (
+          <h2 className="greeting">Hello, {user?.name}!</h2>
+        )}
         <h1>Vehicle Dock Management System</h1>
         <VehicleForm />
         <DockTable />
