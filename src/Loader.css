@@ -46,7 +46,7 @@
   }
   
   button {
-    all: unset;
+    
     border: 2px solid;
     padding: 0.5rem 1rem; /* Reduce padding to smaller values */
     font-size: 1rem; /* Reduce font size to smaller values */
