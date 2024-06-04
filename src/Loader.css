@@ -48,8 +48,8 @@
   button {
     all: unset;
     border: 2px solid;
-    padding: 1rem 2rem;
-    font-size: 1.5rem;
+    padding: 0.5rem 1rem; /* Reduce padding to smaller values */
+    font-size: 1rem; /* Reduce font size to smaller values */
     cursor: pointer;
     position: relative;
     transition: background-color 0.6s, box-shadow 0.3s;
