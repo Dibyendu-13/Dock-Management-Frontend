@@ -15,11 +15,17 @@ const App = () => {
   }, []);
 
   const responseMessage = (response) => {
-    console.log(response);
+    const jwtToken = response.credential; // Get the JWT token from the response
+    const base64Url = jwtToken.split('.')[1]; // Split the token and get the payload
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/'); // Replace characters
+    const payload = JSON.parse(window.atob(base64)); // Decode the payload
+    const userName = payload.name; // Get the user's name from the payload
+    
+    console.log('User name:', userName);
     localStorage.setItem('user', JSON.stringify(response));
     setIsAuthenticated(true);
   };
-
+  
   const errorMessage = (error) => {
     console.error('Google Login Error', error);
   };
