@@ -92,3 +92,39 @@ body, html {
   background-color: #f8f8f8;
 }
   
+
+.container-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+}
+
+.col-md-3 {
+  width: 100%;
+  max-width: 400px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-body {
+  text-align: center;
+}
+
+.animated-heading {
+  margin-bottom: 20px;
+}
+
+.btn-block {
+  width: 100%;
+}
