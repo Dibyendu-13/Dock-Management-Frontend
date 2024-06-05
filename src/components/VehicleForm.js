@@ -5,9 +5,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import './styles.css';
 
 
-const ENDPOINT = "https://secret-castle-75015-b0147fa6ddd8.herokuapp.com";
+// const ENDPOINT = "https://secret-castle-75015-b0147fa6ddd8.herokuapp.com";
 
-// const ENDPOINT = "http://localhost:5000";
+const ENDPOINT = "http://localhost:5000";
 
 function VehicleForm() {
   const [vehicleNumber, setVehicleNumber] = useState('');
@@ -46,7 +46,14 @@ function VehicleForm() {
             toast.info(`Vehicle ${vehicleNumber} added to waiting list.`,{
               closeButton: false // Disable the close button
             });
-        } else {
+        } else if(message.includes('Invalid Vehicle Number!'))
+          {
+            toast.warning(`Invalid Vehicle Number!`,{
+              closeButton: false // Disable the close button
+            });
+
+          }
+        else {
             toast.warning(`Unexpected response: ${message}`,{
               closeButton: false // Disable the close button
             });
