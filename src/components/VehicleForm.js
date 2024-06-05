@@ -23,7 +23,7 @@ function VehicleForm() {
     // Validate if unloading time is negative
     if (parseInt(unloadingTime) < 0) {
         toast.error("Unloading Time Cannot be Negative!");
-        return; // Return to exit the function if unloading time is negative
+        return; // Exit the function if unloading time is negative
     }
 
     try {
@@ -34,30 +34,18 @@ function VehicleForm() {
             is3PL
         });
 
-        const { message } = response.data;
-        // console.log(message);
+        const message = response.data.message;
 
         // Show different toast messages based on the server response
         if (message.includes('assigned to vehicle')) {
-            toast.success(`Vehicle ${vehicleNumber} Docked Successfully!`,{
-              closeButton: false // Disable the close button
+            toast.success(`Vehicle ${vehicleNumber} Docked Successfully!`, {
+                closeButton: false // Disable the close button
             });
         } else if (message.includes('added to waiting list')) {
-            toast.info(`Vehicle ${vehicleNumber} added to waiting list.`,{
-              closeButton: false // Disable the close button
+            toast.info(`Vehicle ${vehicleNumber} added to waiting list.`, {
+                closeButton: false // Disable the close button
             });
-        } else if(message.includes('Invalid Vehicle Number!'))
-          {
-            toast.warning(`Invalid Vehicle Number!`,{
-              closeButton: false // Disable the close button
-            });
-
-          }
-        else {
-            toast.warning(`Unexpected response: ${message}`,{
-              closeButton: false // Disable the close button
-            });
-        }
+        }  
 
         // Reset form state after successful submission
         setVehicleNumber('');
@@ -65,12 +53,22 @@ function VehicleForm() {
         setUnloadingTime('');
         setIs3PL(false);
     } catch (error) {
-        console.error("Error in assigning dock", error);
-        toast.error("An error occurred while assigning the dock. Please try again.",{
-          closeButton: false // Disable the close button
-        });
+        // Check if response message is available in the error object
+        const errorMessage = error.response?.data?.message || "An error occurred while assigning the dock. Please try again.";
+
+        if (errorMessage.includes('Invalid Vehicle')) {
+            toast.warning(`Invalid Vehicle Number!`, {
+                closeButton: false // Disable the close button
+            });
+        } else {
+            console.error("Error in assigning dock", error);
+            toast.error(errorMessage, {
+                closeButton: false // Disable the close button
+            });
+        }
     }
 };
+
 
 
   return (
