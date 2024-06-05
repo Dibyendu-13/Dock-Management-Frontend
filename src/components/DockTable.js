@@ -25,7 +25,7 @@ function DockTable() {
   useEffect(() => {
     const fetchDockData = async () => {
       try {
-        console.log('Fetching dock data from API');
+        // console.log('Fetching dock data from API');
         const response = await axios.get(`${ENDPOINT}/api/dock-status`);
         const { docks, waitingVehicles } = response.data;
         setDocks(docks);
@@ -42,7 +42,7 @@ function DockTable() {
       socketRef.current = io(ENDPOINT);
 
       socketRef.current.on('dockStatusUpdate', ({ docks, waitingVehicles }) => {
-        console.log('Received dock status update from server');
+        // console.log('Received dock status update from server');
         setDocks(docks);
         setWaitingVehicles(waitingVehicles);
 
@@ -57,7 +57,7 @@ function DockTable() {
 
     return () => {
       if (socketRef.current) {
-        console.log('Cleaning up: Disconnecting socket and clearing timers');
+        // console.log('Cleaning up: Disconnecting socket and clearing timers');
         socketRef.current.disconnect();
         socketRef.current = null;
       }
@@ -68,7 +68,7 @@ function DockTable() {
 
 
   const dockVehicle = async (dockId) => {
-    console.log(`Docking vehicle at dock ${dockId}`);
+    // console.log(`Docking vehicle at dock ${dockId}`);
 
     try {
       const response = await axios.post(`${ENDPOINT}/api/assign-dock`, {
@@ -77,7 +77,7 @@ function DockTable() {
         unloadingTime: '',
         is3PL: false,
       });
-      console.log('Vehicle docked successfully', response.data);
+      // console.log('Vehicle docked successfully', response.data);
     } catch (error) {
      
       console.error('Error docking vehicle:', error);
@@ -87,11 +87,11 @@ function DockTable() {
   const startTimer = (dockId, eta) => {
     // Check if timer is already active for the dockId
     if (timersRef.current[dockId]) {
-      console.log(`Timer already active for dock ${dockId}`);
+      // console.log(`Timer already active for dock ${dockId}`);
       return;
     }
 
-    console.log(`Dock ${dockId} timer has started!`);
+    // console.log(`Dock ${dockId} timer has started!`);
     // Set the initial ETA in state
     setEtas(prevEtas => ({
       ...prevEtas,
@@ -103,7 +103,7 @@ function DockTable() {
       setEtas(prevEtas => {
         const newEta = prevEtas[dockId] - 1;
         if (newEta <= 0) {
-          console.log(`Dock ${dockId} timer has reached 0 or negative value!`);
+          // console.log(`Dock ${dockId} timer has reached 0 or negative value!`);
           clearInterval(timersRef.current[dockId]);
       
           undockVehicle(dockId);
@@ -123,10 +123,10 @@ function DockTable() {
 
   const undockVehicle = async (dockId) => {
      
-     let dock=docks.find(dock=>dock.id===dockId)
+    //  let dock=docks.find(dock=>dock.id===dockId)
       
-     console.log(dockId);
-     console.log(dock);
+    //  console.log(dockId);
+    //  console.log(dock);
    
     try {
       if (timersRef.current[dockId]) {
@@ -139,7 +139,7 @@ function DockTable() {
 
        
       
-        console.log(`Clearing timer for dock ${dockId}`);
+        // console.log(`Clearing timer for dock ${dockId}`);
         clearInterval(timersRef.current[dockId]);
         delete timersRef.current[dockId];
 
@@ -166,7 +166,7 @@ function DockTable() {
   const toggleDockStatus = async (dockId) => {
   
 
-    console.log(dockId)
+    // console.log(dockId)
     const dock = docks.find(d => d.id === dockId);
 
     
@@ -185,13 +185,13 @@ function DockTable() {
         
             if (dock.status === 'disabled') {
               if (timersRef.current[dockId]) {
-                console.log(`Clearing timer for dock ${dockId}`);
+                // console.log(`Clearing timer for dock ${dockId}`);
                 clearInterval(timersRef.current[dockId]);
                 delete timersRef.current[dockId];
               }
                
 
-              console.log(dock);
+              // console.log(dock);
              
               if(dock.source===null)
                 dock.status='available';
@@ -200,7 +200,7 @@ function DockTable() {
               
               if(dock.status==='occupied')
                 {
-                      console.log("Starting Timer within enable")
+                      // console.log("Starting Timer within enable")
                       startTimer(dock.id,dock.unloadingTime)
               }
           
@@ -208,18 +208,18 @@ function DockTable() {
                 
 
               const response = await axios.post(`${ENDPOINT}/api/enable-dock`, {dock:dock });
-              console.log(`Dock ${dockId} has been enabled`, response.data);
+              // console.log(`Dock ${dockId} has been enabled`, response.data);
 
                
                 // Retain original status if it was 'occupied' or 'available'
                 updatedDock = { ...dock, status: dock.status };
             } else {
                 const response = await axios.post(`${ENDPOINT}/api/disable-dock`, { dockNumber: dock.dockNumber });
-                console.log(`Dock ${dockId} has been disabled`, response.data);
+                // console.log(`Dock ${dockId} has been disabled`, response.data);
                 updatedDock = { ...dock, status: 'disabled' };
             }
 
-            console.log(updatedDock);
+            // console.log(updatedDock);
             setDocks(prevDocks => prevDocks.map(d => d.id === dockId ? updatedDock : d));
            
               

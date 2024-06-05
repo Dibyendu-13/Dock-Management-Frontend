@@ -35,7 +35,7 @@ function VehicleForm() {
         });
 
         const { message } = response.data;
-        console.log(message);
+        // console.log(message);
 
         // Show different toast messages based on the server response
         if (message.includes('assigned to vehicle')) {
