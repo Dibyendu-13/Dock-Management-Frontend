@@ -15,11 +15,11 @@ const App = () => {
   }, []);
 
   const responseMessage = (response) => {
-   
+    console.log(response);
     localStorage.setItem('user', JSON.stringify(response));
     setIsAuthenticated(true);
   };
-  
+
   const errorMessage = (error) => {
     console.error('Google Login Error', error);
   };
@@ -40,10 +40,11 @@ const App = () => {
           <Route
             path="/"
             element={
-            
+              isAuthenticated ? (
                 <HomePage onLogout={handleLogout} />
-             
-            
+              ) : (
+                <SignIn onSuccess={responseMessage} onError={errorMessage} />
+              )
             }
           />
         </Routes>
