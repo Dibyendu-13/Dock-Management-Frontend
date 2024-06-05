@@ -40,10 +40,12 @@ const App = () => {
           <Route
             path="/"
             element={
-            
-                <HomePage  />
+              isAuthenticated ? (
+                <HomePage onLogout={handleLogout} />
+              ) : (
+                <SignIn onSuccess={responseMessage} onError={errorMessage} />
+              )
             }
-          
           />
         </Routes>
       </Router>
